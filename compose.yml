@@ -1,0 +1,41 @@
+# Reference deployment for the self-hosted GitHub Actions runner.
+#
+# Set REPO_URL, RUNNER_TOKEN, etc. via .env file, then run:
+#
+#   docker compose -f compose.yml up -d
+#
+# The runner-data volume persists the registration and credentials across
+# restarts and re-creation, so the token is only needed on the very first
+# start. Recreate the volume when upgrading the image:
+#
+#   docker compose -f compose.yml down -v && docker compose -f compose.yml up -d
+#
+services:
+  gh-runner:
+    image: ghcr.io/mantit0985/github-actions-runner:latest-runtime-slim
+    container_name: github-actions-runner
+    hostname: github-actions-runner
+    # docker-init as PID 1: proper signal delivery and zombie reaping for
+    # the many short-lived processes CI jobs spawn.
+    init: true
+    restart: always
+    # restart: always is the task-recreation loop in Ephemeral mode; scale-to-zero/pre-warm is the controller's job
+    # The runner drains in-flight jobs on SIGTERM; give it time before
+    # SIGKILL (docker default is 10s).
+    stop_grace_period: 30s
+    env_file:
+      - .env
+    environment:
+      RUNNER_MODE: ${RUNNER_MODE:-persistent}
+      RUNNER_TOKEN_SOURCE: ${RUNNER_TOKEN_SOURCE:-mint}
+      RUNNER_TOKEN_FILE: ${RUNNER_TOKEN_FILE:-/run/secrets/runner-token}
+      IDLE_EXIT_SECONDS: ${IDLE_EXIT_SECONDS:-900}
+    volumes:
+      - runner-data:/home/runner
+      # Exposes the host Docker daemon to jobs (root-equivalent access).
+      # Remove this if your workflows do not build Docker images.
+      - /var/run/docker.sock:/var/run/docker.sock
+# Swarm-only: the docker-swarm stack (stack.yml slice) declares external token references (runner-token now; runner-pat later for RUNNER_TOKEN_SOURCE=mint). Plain compose mounts no tokens— it passes tokens via env (persistent mode) and stays the canary's consumption path.
+
+volumes:
+  runner-data:

@@ -1,0 +1,51 @@
+# Canary runner stack – ephemeral canary runner on the swarm
+#
+# Stack deploys a single gh-actions-runner pod that runs in
+# an ever‑renewable pre‑minted token mode.  Nodes are filtered
+# by OS/CPU tier using the node.label.t value.  The unique
+# secret runner‑token is refreshed by the minter lane every hour.
+# Plain compose (compose.yml) never mounts secrets, a Secure
+# secret stack configuration is required.
+
+services:
+  ghar:
+    image: ghcr.io/mantit0985/github-actions-runner:latest-runtime-slim
+    environment:
+      REPO_URL: https://github.com/mantit0985/github-actions-runner
+      RUNNER_MODE: ephemeral
+      RUNNER_TOKEN_SOURCE: preminted
+      RUNNER_LABELS: self-hosted,linux,amd64
+    secrets:
+      - runner-token
+    init: true
+    stop_grace_period: 30s
+    volumes:
+      - runner-data:/home/runner
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.t != 4
+          - node.labels.t != 0
+      restart_policy:
+        condition: on-failure
+        delay: 30s
+    # The on-failure policy keeps the stack from trying
+    # to mint on every stack update – stack updates will
+    # deliberately recreate tasks via orchestration.
+
+secrets:
+  runner-token:
+    external: true
+    name: runner-token
+
+# The runner‑pat secret is commented out for future use.
+# This would allow a token minted from a GitHub App key:
+# https://docs.github.com/en/rest/reference/actions#create-a-runner-token
+# runner-pat:
+#   external: true
+#   name: runner-pat
+
+volumes:
+  runner-data:
+    driver: local
