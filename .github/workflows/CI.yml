@@ -43,10 +43,7 @@ jobs:
         # removing the mount dependency.
         run: |
           docker pull hadolint/hadolint:v2.12.0 >/dev/null
-          # --ignore DL3007: the FROM :latest base is deliberate (consume-first
-          # fleet doctrine, 2026-10-22) and the STDIN delivery cannot surface
-          # .hadolint.yaml to the container, so the ignore lives on the CLI.
-          docker run --rm -i hadolint/hadolint:v2.12.0 hadolint --ignore DL3007 - < Dockerfile
+          docker run --rm -i hadolint/hadolint:v2.12.0 hadolint - < Dockerfile
           docker pull koalaman/shellcheck-alpine:v0.10.0 >/dev/null
           docker run --rm -i koalaman/shellcheck-alpine:v0.10.0 \
             shellcheck --shell=bash - < run.sh

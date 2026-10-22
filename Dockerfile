@@ -3,7 +3,7 @@
 # the pinned toolchains and the vendored npm tree are upstream content now, and
 # the entire pinned-toolchain fetch stage is retired. This layer adds only the
 # fleet's own entrypoint: the github-app per-start registration script.
-FROM ghcr.io/actions/actions-runner:latest AS runtime-slim
+FROM ghcr.io/actions/actions-runner@sha256:4ffadc0002b2581327e06101fc8c06cd189232baf79fe561fac9caeb76f5e807 AS runtime-slim
 
 LABEL org.opencontainers.image.title="github-actions-runner" \
       org.opencontainers.image.description="Self-hosted GitHub Actions runner with the github-app per-start registration entrypoint" \
