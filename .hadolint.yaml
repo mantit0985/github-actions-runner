@@ -1,0 +1,5 @@
+# DL3008 (apt package version pinning) is ignored: exact version pinning is brittle across this image's multi-stage, multi-arch Ubuntu bases.
+# The failure threshold keeps 'info' findings (SC1091) non-fatal so the gate fails on real defects only.
+failure-threshold: warning
+ignored:
+  - DL3008

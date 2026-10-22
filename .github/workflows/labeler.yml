@@ -1,0 +1,17 @@
+name: Labeler
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  issues:
+    types: [opened, reopened]
+
+permissions:
+  pull-requests: write
+  issues: write
+  contents: read
+
+jobs:
+  label:
+    secrets: inherit
+    uses: mantit0985/.github/.github/workflows/labeler.yml@main

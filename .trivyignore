@@ -1,0 +1,54 @@
+# Thin-image scan posture (2026-10-22): this image CONSUMES the official upstream
+# base ghcr.io/actions/actions-runner:2.338.0. Every finding below was scanned
+# (trivy CRITICAL,HIGH, ignore-unfixed) into the UPSTREAM base layers — the npm
+# bundle inside the runner artifact, the .NET runner binaries, and the base's
+# bundled docker/containerd — none of them content produced by this repository.
+# Posture: upstream findings are report-only; our layer adds only run.sh. Do NOT
+# add repository-origin fixes here. Regenerate from a fresh trivy scan whenever
+# the FROM base version changes; every entry auto-expires so a stale list fails
+# loudly rather than silently widening the gate.
+# expiry horizon for the 2.338.0 pin
+CVE-2024-21538 @2026-12-15
+CVE-2025-64756 @2026-12-15
+CVE-2026-102276 @2026-12-15
+CVE-2026-102278 @2026-12-15
+CVE-2026-111943 @2026-12-15
+CVE-2026-13149 @2026-12-15
+CVE-2026-14257 @2026-12-15
+CVE-2026-17106 @2026-12-15
+CVE-2026-19534 @2026-12-15
+CVE-2026-23745 @2026-12-15
+CVE-2026-23950 @2026-12-15
+CVE-2026-24842 @2026-12-15
+CVE-2026-26960 @2026-12-15
+CVE-2026-26996 @2026-12-15
+CVE-2026-27903 @2026-12-15
+CVE-2026-27904 @2026-12-15
+CVE-2026-29786 @2026-12-15
+CVE-2026-31802 @2026-12-15
+CVE-2026-46600 @2026-12-15
+CVE-2026-48815 @2026-12-15
+CVE-2026-56851 @2026-12-15
+CVE-2026-56852 @2026-12-15
+CVE-2026-56854 @2026-12-15
+CVE-2026-56864 @2026-12-15
+CVE-2026-56865 @2026-12-15
+CVE-2026-58280 @2026-12-15
+CVE-2026-59873 @2026-12-15
+CVE-2026-59874 @2026-12-15
+CVE-2026-63209 @2026-12-15
+CVE-2026-69152 @2026-12-15
+CVE-2026-69192 @2026-12-15
+CVE-2026-69651 @2026-12-15
+CVE-2026-73566 @2026-12-15
+CVE-2026-78667 @2026-12-15
+CVE-2026-78669 @2026-12-15
+CVE-2026-84008 @2026-12-15
+CVE-2026-84304 @2026-12-15
+CVE-2026-84445 @2026-12-15
+CVE-2026-9496 @2026-12-15
+CVE-2026-96225 @2026-12-15
+CVE-2026-96231 @2026-12-15
+CVE-2026-96233 @2026-12-15
+CVE-2026-97031 @2026-12-15
+GHSA-hrxh-6v49-42gf @2026-12-15

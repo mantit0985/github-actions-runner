@@ -1,0 +1,24 @@
+name: CD
+'on':
+  push:
+    tags:
+      - v*
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+  workflow_dispatch:
+permissions:
+  contents: write
+  packages: write
+  actions: read
+jobs:
+  cd:
+    if: ${{ (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main') || github.event_name == 'workflow_dispatch' || github.ref_type == 'tag' }}
+    secrets: inherit
+    uses: mantit0985/.github/.github/workflows/cd.yml@main
+    with:
+      image_name: ${{ github.repository }}
+      tag: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+      enable_ci_gate: true

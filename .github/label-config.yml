@@ -1,0 +1,15 @@
+# Version 1.1 — adapted from mantit0985/.github label-config for this repo's layout
+# Consumed by mantit0985/.github/.github/actions/pr-labeler (config path hardcoded
+# to .github/label-config.yml in the CALLER repo).
+branch_mappings:
+  feat/: enhancement
+  fix/: bug
+  chore/: chore
+  docs/: documentation
+  refactor/: refactor
+  test/: test
+
+file_mappings:
+  chore: "^\\.github/"
+  feature: "^(stack|compose)\\.yml$|^Makefile$|^docker|^run\\.sh$"
+  documentation: "^docs/|\\.md$"

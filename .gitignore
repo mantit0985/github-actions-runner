@@ -1,0 +1,9 @@
+.env
+.env.*
+*.log
+.runner
+.credentials
+.DS_Store
+.idea/
+.vscode/
+.sandcastle/

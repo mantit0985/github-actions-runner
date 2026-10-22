@@ -1,0 +1,75 @@
+# CI workflow — single-job inline pipeline.
+# Back-to-inline verdict (2026-10-22): the reusable hub workflow splits
+# quality/build-verify/security into cross-node self-hosted jobs, which
+# breaks the same-node image lease the Trivy image scan depends on
+# (evidence: run 39625338977 ran verify on node 40bfbd14ae6b but security
+# on node 36ee14f46328). All gates stay, as sequential steps of ONE job;
+# the shared hub actions (commit hygiene gate, security scan) are still
+# used cross-repo.
+name: CI
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: [self-hosted, linux, X64]
+    timeout-minutes: 20
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Commit hygiene gate
+        uses: mantit0985/.github/.github/actions/commit-hygiene-gate@main
+        with:
+          before: ${{ github.event.before }}
+
+      - name: Docker Quality (hadolint + shellcheck)
+        # Both lints are delivered over STDIN on purpose: the runner itself
+        # executes in a container, so its $PWD is not a host path and a
+        # "-v $PWD:/mnt" mount resolves to an empty auto-created directory
+        # on the host daemon (evidence: run 39727434857 "openBinaryFile:
+        # does not exist"). STDIN keeps tool versions and semantics while
+        # removing the mount dependency.
+        run: |
+          docker pull hadolint/hadolint:v2.12.0 >/dev/null
+          docker run --rm -i hadolint/hadolint:v2.12.0 hadolint - < Dockerfile
+          docker pull koalaman/shellcheck-alpine:v0.10.0 >/dev/null
+          docker run --rm -i koalaman/shellcheck-alpine:v0.10.0 \
+            shellcheck --shell=bash - < run.sh
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f
+
+      - name: Build Docker image (Verify Only)
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25
+        with:
+          context: .
+          file: Dockerfile
+          push: false
+          load: true
+          platforms: linux/amd64
+          tags: ghcr.io/${{ github.repository }}:ci
+
+      - name: Security Scan
+        uses: mantit0985/.github/.github/actions/security-scan@main
+        with:
+          semgrep_config: 'p/docker'
+          image_name: ghcr.io/${{ github.repository }}:ci
+
+      - name: Runner Smoke
+        run: |
+          docker run --rm --entrypoint /bin/sh ghcr.io/${{ github.repository }}:ci -c '/home/runner/config.sh --version'
